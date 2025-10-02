@@ -1,6 +1,12 @@
 using Appointments.API.Infrastructure.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Appointments.Application.Commands;
+using Appointments.Application.Mappings;
+using Appointments.Domain.Interfaces;
+using Appointments.Infrastructure.Repositories;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+
 using System.Text;
 
 namespace Appointments.API;
@@ -14,9 +20,6 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddMediatR(cfg => {
-            cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
-        });
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         if (string.IsNullOrEmpty(connectionString))
@@ -25,20 +28,14 @@ public class Program
         }
         builder.Services.AddSingleton<DapperContext>(sp => new DapperContext(connectionString));
 
-        //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        //.AddJwtBearer(options =>
-        //{
-        //    options.TokenValidationParameters = new TokenValidationParameters
-        //    {
-        //        ValidateIssuer = true,
-        //        ValidateAudience = true,
-        //        ValidateLifetime = true,
-        //        ValidateIssuerSigningKey = true,
-        //        ValidIssuer = "AuthMicroService",
-        //        ValidAudience = "YourApiClient",
-        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_that_is_long_and_random_and_at_least_32_chars"))
-        //    };
-        //});
+        builder.Services.AddMediatR(cfg => {
+            cfg.RegisterServicesFromAssembly(typeof(CreateAppointmentCommandHandler).Assembly);
+        });
+
+        builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile).Assembly));
+
+        builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
+        builder.Services.AddScoped<IResultsRepository, ResultsRepository>();
 
         var app = builder.Build();
 
@@ -49,9 +46,6 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-
-        app.UseAuthentication();
-        app.UseAuthorization();
 
         app.MapControllers();
 
