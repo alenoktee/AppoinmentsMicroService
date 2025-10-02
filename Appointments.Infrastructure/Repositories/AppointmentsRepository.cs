@@ -18,9 +18,9 @@ public class AppointmentsRepository : IAppointmentsRepository
         _context = context;
     }
 
-    public async Task<Appointment> CreateAsync(Appointment appointment) // Метод теперь просто принимает готовый appointment
+    public async Task<Appointment> CreateAsync(Appointment appointment)
     {
-        using var connection = new NpgsqlConnection(_context.ConnectionString);
+        using var connection = _context.CreateConnection();
 
         var parameters = new
         {
@@ -48,38 +48,42 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         return appointment;
     }
+    public async Task<int> ChangeStatusAsync(Guid id, short status)
+    {
+        using var connection = _context.CreateConnection();
+        var sql = "SELECT update_appointment_status(@p_id, @p_status)";
+        var parameters = new { p_id = id, p_status = status };
 
-    public async Task<Appointment?> GetAppointmentWithResultAsync(Guid id)
+        return await connection.ExecuteAsync(sql, parameters);
+    }
+
+
+    public Task<Appointment?> GetByIdAsync(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<Appointment>> GetAsDoctorAsync(Guid doctorId)
+    public Task<IEnumerable<Appointment>> GetAsync()
     {
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<Appointment>> GetAsPatientAsync(Guid patientId)
+    public Task<IEnumerable<Appointment>> GetAsDoctorAsync(Guid doctorId, int pageSize, int pageNumber)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<Appointment>> GetAsync()
+    public Task<IEnumerable<Appointment>> GetAsPatientAsync(Guid patientId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<Appointment?> GetByIdAsync(Guid id)
+    public Task DeleteAsync(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public async Task DeleteAsync(Guid id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task ChangeStatusAsync(Guid id, short status)
+    public Task<Appointment?> GetAppointmentWithResultAsync(Guid id)
     {
         throw new NotImplementedException();
     }

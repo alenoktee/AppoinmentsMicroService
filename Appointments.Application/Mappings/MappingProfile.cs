@@ -1,6 +1,6 @@
 using AutoMapper;
-using Appointments.Application.Commands;
 using Appointments.Domain.Entities;
+using Appointments.Application.Appointments.Commands.CreateAppointment;
 
 namespace Appointments.Application.Mappings;
 

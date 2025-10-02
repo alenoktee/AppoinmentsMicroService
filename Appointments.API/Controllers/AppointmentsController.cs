@@ -1,7 +1,10 @@
-using MediatR;
+using Appointments.Application.Appointments.Commands.CancelAppointment;
+using Appointments.Application.Appointments.Commands.CreateAppointment;
 using Appointments.Application.DTOs;
+
+using MediatR;
+
 using Microsoft.AspNetCore.Mvc;
-using Appointments.Application.Commands;
 
 namespace Appointments.API.Controllers;
 
@@ -40,6 +43,22 @@ public class AppointmentsController : ControllerBase
 
         return CreatedAtAction(nameof(GetAppointmentById), new { id = appointmentId }, appointmentId);
     }
+
+    [HttpPatch("{id}/cancel")]
+    public async Task<IActionResult> CancelAppointment(Guid id)
+    {
+        try
+        {
+            var command = new CancelAppointmentCommand(id);
+            await _mediator.Send(command);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetAppointmentById(Guid id)

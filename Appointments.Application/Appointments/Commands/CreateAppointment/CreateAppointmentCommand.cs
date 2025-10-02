@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Appointments.Application.Commands;
+namespace Appointments.Application.Appointments.Commands.CreateAppointment;
 
 public record CreateAppointmentCommand(
     Guid PatientId,

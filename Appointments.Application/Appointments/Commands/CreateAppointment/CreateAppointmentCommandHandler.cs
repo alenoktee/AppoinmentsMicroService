@@ -6,7 +6,7 @@ using AutoMapper;
 
 using MediatR;
 
-namespace Appointments.Application.Commands;
+namespace Appointments.Application.Appointments.Commands.CreateAppointment;
 
 public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointmentCommand, Guid>
 {

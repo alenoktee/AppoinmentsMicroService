@@ -1,5 +1,5 @@
 using Appointments.API.Infrastructure.Data;
-using Appointments.Application.Commands;
+using Appointments.Application.Appointments.Commands.CreateAppointment;
 using Appointments.Application.Mappings;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
@@ -26,7 +26,8 @@ public class Program
         {
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         }
-        builder.Services.AddSingleton<DapperContext>(sp => new DapperContext(connectionString));
+        builder.Services.AddSingleton<DapperContext>();
+        builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
 
         builder.Services.AddMediatR(cfg => {
             cfg.RegisterServicesFromAssembly(typeof(CreateAppointmentCommandHandler).Assembly);

@@ -1,11 +1,21 @@
+using System.Data;
+
+using Microsoft.Extensions.Configuration;
+
+using Npgsql;
+
 namespace Appointments.API.Infrastructure.Data;
 
 public class DapperContext
 {
-    public string ConnectionString { get; }
+    private readonly string _connectionString;
 
-    public DapperContext(string connectionString)
+    public DapperContext(IConfiguration configuration)
     {
-        ConnectionString = connectionString;
+        _connectionString = configuration.GetConnectionString("DefaultConnection")
+                            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     }
+
+    public IDbConnection CreateConnection()
+        => new NpgsqlConnection(_connectionString);
 }
