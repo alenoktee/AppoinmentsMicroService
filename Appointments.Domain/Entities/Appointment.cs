@@ -14,7 +14,7 @@ public partial class Appointment
     public DateTime Date { get; set; }
     public TimeSpan Time { get; set; }
     public AppointmentStatus Status { get; set; }
-
+    public Guid OfficeId { get; set; }
     public string ServiceName { get; set; } = string.Empty;
     public string DoctorFirstName { get; set; } = string.Empty;
     public string DoctorLastName { get; set; } = string.Empty;

@@ -6,7 +6,12 @@ public record AppointmentForReceptionistDto(
     TimeSpan Time,
     string PatientFirstName,
     string PatientLastName,
+    string? PatientMiddleName,
     string DoctorFirstName,
     string DoctorLastName,
-    string ServiceName
+    string? DoctorMiddleName, 
+    string ServiceName,
+    string PatientPhoneNumber,
+    short Status,
+    Guid OfficeId
 );

@@ -6,6 +6,7 @@ public record CreateAppointmentCommand(
     Guid PatientId,
     Guid DoctorId,
     Guid ServiceId,
+    Guid OfficeId,
     DateTime Date,
     TimeSpan Time,
     string ServiceName,

@@ -5,7 +5,7 @@ using Appointments.Application.Dtos;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Appointments.Application.Appointments.Queries.GetAppointmentAsReceptionist;
+namespace Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsReceptionist;
 
 public class GetAppointmentAsReceptionistQueryHandler : IRequestHandler<GetAppointmentAsReceptionistQuery, AppointmentForReceptionistDto?>
 {

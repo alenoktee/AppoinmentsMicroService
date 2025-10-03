@@ -5,7 +5,7 @@ using Appointments.Application.Dtos;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Appointments.Application.Appointments.Queries.GetAppointmentAsPatient;
+namespace Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsPatient;
 
 public class GetAppointmentAsPatientQueryHandler : IRequestHandler<GetAppointmentAsPatientQuery, AppointmentForPatientDto?>
 {

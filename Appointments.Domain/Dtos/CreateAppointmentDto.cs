@@ -4,6 +4,7 @@ public record CreateAppointmentDto(
     Guid PatientId,
     Guid DoctorId,
     Guid ServiceId,
+    Guid OfficeId,
     DateTime Date,
     TimeSpan Time,
     string ServiceName,

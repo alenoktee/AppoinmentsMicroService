@@ -21,10 +21,9 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
 
     public async Task<Guid> Handle(CreateAppointmentCommand command, CancellationToken cancellationToken)
     {
-        var appointmentId = Guid.NewGuid();
-        var appointment = new Appointment(appointmentId);
-        _mapper.Map(command, appointment);
-        appointment.Status = AppointmentStatus.Scheduled;
+        var appointment = _mapper.Map<Appointment>(command);
+
+        appointment.Status = (short)AppointmentStatus.Scheduled;
 
         await _appointmentsRepository.CreateAsync(appointment);
 

@@ -6,5 +6,6 @@ public record AppointmentForDoctorDto(
     TimeSpan Time,
     string PatientFirstName,
     string PatientLastName,
-    string ServiceName
+    string ServiceName,
+    short Status
 );
