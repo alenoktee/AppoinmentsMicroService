@@ -1,4 +1,4 @@
-namespace Appointments.Application.DTOs;
+namespace Appointments.Application.Dtos;
 
 public record AppointmentForPatientDto(
     Guid Id,

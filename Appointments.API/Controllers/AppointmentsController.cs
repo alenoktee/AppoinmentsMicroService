@@ -1,6 +1,9 @@
 using Appointments.Application.Appointments.Commands.CancelAppointment;
 using Appointments.Application.Appointments.Commands.CreateAppointment;
-using Appointments.Application.DTOs;
+using Appointments.Application.Appointments.Queries.GetAppointmentAsDoctor;
+using Appointments.Application.Appointments.Queries.GetAppointmentAsPatient;
+using Appointments.Application.Appointments.Queries.GetAppointmentAsReceptionist;
+using Appointments.Application.Dtos;
 
 using MediatR;
 
@@ -41,7 +44,7 @@ public class AppointmentsController : ControllerBase
 
         var appointmentId = await _mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetAppointmentById), new { id = appointmentId }, appointmentId);
+        return CreatedAtAction(nameof(GetAppointmentForReceptionist), new { id = appointmentId }, appointmentId);
     }
 
     [HttpPatch("{id}/cancel")]
@@ -59,10 +62,36 @@ public class AppointmentsController : ControllerBase
         }
     }
 
-
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetAppointmentById(Guid id)
+    [HttpGet("doctor/{id:guid}")]
+    [ProducesResponseType(typeof(AppointmentForDoctorDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAppointmentForDoctor(Guid id)
     {
-        return Ok($"ыыыыыы");
+        var query = new GetAppointmentAsDoctorQuery(id);
+        var result = await _mediator.Send(query);
+
+        return result is null ? NotFound() : Ok(result);
+    }
+
+    [HttpGet("patient/{id:guid}")]
+    [ProducesResponseType(typeof(AppointmentForPatientDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAppointmentForPatient(Guid id)
+    {
+        var query = new GetAppointmentAsPatientQuery(id);
+        var result = await _mediator.Send(query);
+
+        return result is null ? NotFound() : Ok(result);
+    }
+
+    [HttpGet("receptionist/{id:guid}")]
+    [ProducesResponseType(typeof(AppointmentForReceptionistDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAppointmentForReceptionist(Guid id)
+    {
+        var query = new GetAppointmentAsReceptionistQuery(id);
+        var result = await _mediator.Send(query);
+
+        return result is null ? NotFound() : Ok(result);
     }
 }

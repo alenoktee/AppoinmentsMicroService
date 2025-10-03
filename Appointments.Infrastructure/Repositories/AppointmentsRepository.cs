@@ -1,8 +1,10 @@
 using Appointments.API.Infrastructure.Data;
-using Appointments.Domain.Interfaces;
+using Appointments.Application.Dtos;
 using Appointments.Domain.Entities;
+using Appointments.Domain.Interfaces;
 
 using Dapper;
+
 using Npgsql;
 
 using System.Data;
@@ -48,6 +50,7 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         return appointment;
     }
+
     public async Task<int> ChangeStatusAsync(Guid id, short status)
     {
         using var connection = _context.CreateConnection();
@@ -57,6 +60,26 @@ public class AppointmentsRepository : IAppointmentsRepository
         return await connection.ExecuteAsync(sql, parameters);
     }
 
+    public async Task<AppointmentForDoctorDto?> GetForDoctorByIdAsync(Guid id)
+    {
+        using var connection = _context.CreateConnection();
+        var sql = "SELECT * FROM get_appointment_for_doctor(@id)";
+        return await connection.QuerySingleOrDefaultAsync<AppointmentForDoctorDto>(sql, new { id });
+    }
+
+    public async Task<AppointmentForPatientDto?> GetForPatientByIdAsync(Guid id)
+    {
+        using var connection = _context.CreateConnection();
+        var sql = "SELECT * FROM get_appointment_for_patient(@id)";
+        return await connection.QuerySingleOrDefaultAsync<AppointmentForPatientDto>(sql, new { id });
+    }
+
+    public async Task<AppointmentForReceptionistDto?> GetForReceptionistByIdAsync(Guid id)
+    {
+        using var connection = _context.CreateConnection();
+        var sql = "SELECT * FROM get_appointment_for_receptionist(@id)";
+        return await connection.QuerySingleOrDefaultAsync<AppointmentForReceptionistDto>(sql, new { id });
+    }
 
     public Task<Appointment?> GetByIdAsync(Guid id)
     {
@@ -68,12 +91,12 @@ public class AppointmentsRepository : IAppointmentsRepository
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Appointment>> GetAsDoctorAsync(Guid doctorId, int pageSize, int pageNumber)
+    public Task<IEnumerable<AppointmentForDoctorDto>> GetForDoctorPaginatedAsync(Guid doctorId, int pageSize, int pageNumber)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Appointment>> GetAsPatientAsync(Guid patientId)
+    public Task<IEnumerable<AppointmentForPatientDto>> GetForPatientPaginatedAsync(Guid patientId, int pageSize, int pageNumber)
     {
         throw new NotImplementedException();
     }
