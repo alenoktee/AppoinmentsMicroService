@@ -21,20 +21,33 @@ public class AppointmentsRepository : IAppointmentsRepository
         _context = context;
     }
 
-    public async Task<Appointment> CreateAsync(Appointment appointment)
+    public async Task<Guid> CreateAsync(Appointment appointment)
     {
         using var connection = _context.CreateConnection();
 
-        var sql = "SELECT create_appointment(" +
+        const string sql = "SELECT create_appointment(" +
                            "@Id, @PatientId, @DoctorId, @ServiceId, @OfficeId, @Date, @Time, " +
                            "@ServiceName, @DoctorFirstName, @DoctorLastName, @DoctorMiddleName, " +
                            "@PatientFirstName, @PatientLastName, @PatientMiddleName)";
 
-        await connection.ExecuteAsync(sql, appointment);
+        var parameters = new DynamicParameters();
+        parameters.Add("@Id", appointment.Id);
+        parameters.Add("@PatientId", appointment.PatientId);
+        parameters.Add("@DoctorId", appointment.DoctorId);
+        parameters.Add("@ServiceId", appointment.ServiceId);
+        parameters.Add("@OfficeId", appointment.OfficeId);
+        parameters.Add("@Date", appointment.Date, DbType.Date);
+        parameters.Add("@Time", appointment.Time, DbType.Time);
+        parameters.Add("@ServiceName", appointment.ServiceName);
+        parameters.Add("@DoctorFirstName", appointment.DoctorFirstName);
+        parameters.Add("@DoctorLastName", appointment.DoctorLastName);
+        parameters.Add("@DoctorMiddleName", appointment.DoctorMiddleName);
+        parameters.Add("@PatientFirstName", appointment.PatientFirstName);
+        parameters.Add("@PatientLastName", appointment.PatientLastName);
+        parameters.Add("@PatientMiddleName", appointment.PatientMiddleName);
 
-        return appointment;
+        return await connection.ExecuteScalarAsync<Guid>(sql, parameters);
     }
-
     public async Task<int> ChangeStatusAsync(Guid id, short status)
     {
         using var connection = _context.CreateConnection();
@@ -73,28 +86,16 @@ public class AppointmentsRepository : IAppointmentsRepository
             new { appointment_id = id });
     }
 
-    public Task<Appointment?> GetByIdAsync(Guid id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Appointment>> GetAsync()
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<IEnumerable<AppointmentForDoctorDto>> GetForDoctorPaginatedAsync(Guid doctorId, int pageSize, int pageNumber, DateTime date)
     {
         using var connection = _context.CreateConnection();
         var sql = "SELECT * FROM get_appointments_for_doctor_paginated(@doctor_id, @page_size, @page_number, @filter_date)";
 
-        var parameters = new
-        {
-            doctor_id = doctorId,
-            page_size = pageSize,
-            page_number = pageNumber,
-            filter_date = date
-        };
+        var parameters = new DynamicParameters();
+        parameters.Add("doctor_id", doctorId);
+        parameters.Add("page_size", pageSize);
+        parameters.Add("page_number", pageNumber);
+        parameters.Add("filter_date", date, DbType.Date);
 
         return await connection.QueryAsync<AppointmentForDoctorDto>(sql, parameters);
     }
@@ -149,13 +150,21 @@ public class AppointmentsRepository : IAppointmentsRepository
         return await connection.ExecuteAsync(sql, parameters);
     }
 
-    public Task DeleteAsync(Guid id)
+    public Task<Appointment?> GetAppointmentWithResultAsync(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Appointment?> GetAppointmentWithResultAsync(Guid id)
+    public async Task<int> RescheduleAsync(Guid id, DateTime newDate, TimeSpan newTime)
     {
-        throw new NotImplementedException();
+        using var connection = _context.CreateConnection();
+        const string sql = "SELECT reschedule_appointment(@appointment_id, @new_date, @new_time)";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("appointment_id", id);
+        parameters.Add("new_date", newDate, DbType.Date);
+        parameters.Add("new_time", newTime, DbType.Time);
+
+        return await connection.ExecuteAsync(sql, parameters);
     }
 }

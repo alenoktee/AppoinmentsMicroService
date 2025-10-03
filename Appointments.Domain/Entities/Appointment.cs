@@ -7,7 +7,7 @@ namespace Appointments.Domain.Entities;
 
 public partial class Appointment
 {
-    public Guid Id { get; init; }
+    public Guid Id { get; init; } = Guid.NewGuid();
     public Guid PatientId { get; set; }
     public Guid DoctorId { get; set; }
     public Guid ServiceId { get; set; }

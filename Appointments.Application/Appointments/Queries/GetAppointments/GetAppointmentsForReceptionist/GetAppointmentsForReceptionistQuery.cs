@@ -10,5 +10,5 @@ public record GetAppointmentsForReceptionistQuery(
     DateTime? Date,
     string? DoctorFullName,
     string? ServiceName,
-    int? Status,
+    short? Status,
     Guid? OfficeId) : IRequest<IEnumerable<AppointmentForReceptionistDto>>;

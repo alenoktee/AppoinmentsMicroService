@@ -1,6 +1,7 @@
 using Appointments.Application.Appointments.Commands.ApproveAppointment;
 using Appointments.Application.Appointments.Commands.CancelAppointment;
 using Appointments.Application.Appointments.Commands.CreateAppointment;
+using Appointments.Application.Appointments.Commands.RescheduleAppointment;
 using Appointments.Application.Appointments.Queries.GetAppointments.GetAppointmentsForDoctor;
 using Appointments.Application.Appointments.Queries.GetAppointments.GetAppointmentsForPatient;
 using Appointments.Application.Appointments.Queries.GetAppointments.GetAppointmentsForReceptionist;
@@ -8,6 +9,7 @@ using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsDoct
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsPatient;
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsReceptionist;
 using Appointments.Application.Dtos;
+using Appointments.Domain.Dtos;
 
 using MediatR;
 
@@ -35,6 +37,7 @@ public class AppointmentsController : ControllerBase
             dto.PatientId,
             dto.DoctorId,
             dto.ServiceId,
+            dto.OfficeId,
             dto.Date,
             dto.Time,
             dto.ServiceName,
@@ -141,11 +144,28 @@ public class AppointmentsController : ControllerBase
     [HttpGet("receptionist")]
     public async Task<IActionResult> GetAppointmentsForReceptionist(
     int pageSize, int pageNumber, DateTime? date,
-    string? doctorFullName, string? serviceName, int? status, Guid? officeId) // Добавлен officeId
+    string? doctorFullName, string? serviceName, short? status, Guid? officeId)
     {
         var query = new GetAppointmentsForReceptionistQuery(
-            pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId); // Добавлен officeId
+            pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId);
         var result = await _mediator.Send(query);
         return Ok(result);
+    }
+
+    [HttpPatch("{id:guid}/reschedule")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleAppointmentDto dto)
+    {
+        try
+        {
+            var command = new RescheduleAppointmentCommand(id, dto.NewDate, dto.NewTime);
+            await _mediator.Send(command);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 }
