@@ -4,6 +4,8 @@ using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
 
+using AutoMapper;
+
 using Dapper;
 
 using Npgsql;
@@ -15,10 +17,14 @@ namespace Appointments.Infrastructure.Repositories;
 public class AppointmentsRepository : IAppointmentsRepository
 {
     private readonly DapperContext _context;
+    private readonly IResultsRepository _resultsRepository;
+    private readonly IMapper _mapper;
 
-    public AppointmentsRepository(DapperContext context)
+    public AppointmentsRepository(DapperContext context, IResultsRepository resultsRepository, IMapper mapper)
     {
         _context = context;
+        _resultsRepository = resultsRepository;
+        _mapper = mapper;
     }
 
     public async Task<Guid> CreateAsync(Appointment appointment)
@@ -150,11 +156,6 @@ public class AppointmentsRepository : IAppointmentsRepository
         return await connection.ExecuteAsync(sql, parameters);
     }
 
-    public Task<Appointment?> GetAppointmentWithResultAsync(Guid id)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<int> RescheduleAsync(Guid id, DateTime newDate, TimeSpan newTime)
     {
         using var connection = _context.CreateConnection();
@@ -166,5 +167,26 @@ public class AppointmentsRepository : IAppointmentsRepository
         parameters.Add("new_time", newTime, DbType.Time);
 
         return await connection.ExecuteAsync(sql, parameters);
+    }
+
+    public async Task<Appointment?> GetByIdAsync(Guid id)
+    {
+        using var connection = _context.CreateConnection();
+
+        const string sql = @"SELECT * FROM ""Appointments"" WHERE ""Id"" = @id";
+        var appointmentData = await connection.QuerySingleOrDefaultAsync<Appointment>(sql, new { id });
+
+        if (appointmentData == null)
+        {
+            return null;
+        }
+
+        Func<ICollection<Result>> resultsLoader = () =>
+            _resultsRepository.GetByAppointmentId(appointmentData.Id).ToList();
+
+        var proxy = _mapper.Map<AppointmentProxy>(appointmentData, opts =>
+            opts.Items["ResultsLoader"] = resultsLoader);
+
+        return proxy;
     }
 }

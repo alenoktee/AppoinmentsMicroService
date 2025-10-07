@@ -4,8 +4,8 @@ namespace Appointments.Domain.Interfaces;
 
 public interface IResultsRepository
 {
-    Task<Result> CreateAsync(Result model);
+    Task<Guid> CreateAsync(Result result);
     Task<Result?> GetByIdAsync(Guid id);
-    Task UpdateAsync(Result model);
-    Task DeleteAsync(Guid id);
+    Task<int> UpdateAsync(Guid id, string complaints, string conclusion, string recommendations);
+    IEnumerable<Result> GetByAppointmentId(Guid appointmentId);
 }

@@ -15,6 +15,8 @@ using MediatR;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Npgsql;
+
 namespace Appointments.API.Controllers;
 
 [ApiController]
@@ -154,6 +156,7 @@ public class AppointmentsController : ControllerBase
 
     [HttpPatch("{id:guid}/reschedule")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleAppointmentDto dto)
     {
@@ -163,9 +166,17 @@ public class AppointmentsController : ControllerBase
             await _mediator.Send(command);
             return NoContent();
         }
-        catch (Exception ex)
+        catch (PostgresException ex) when (ex.SqlState == "P0001")
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (PostgresException ex) when (ex.SqlState == "P0002")
         {
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex}");
         }
     }
 }
