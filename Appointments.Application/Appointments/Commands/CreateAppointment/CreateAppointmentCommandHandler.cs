@@ -23,7 +23,7 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
     {
         var appointment = _mapper.Map<Appointment>(command);
 
-        appointment.Status = (short)AppointmentStatus.Scheduled;
+        appointment.Status = AppointmentStatus.Scheduled;
 
         await _appointmentsRepository.CreateAsync(appointment);
 

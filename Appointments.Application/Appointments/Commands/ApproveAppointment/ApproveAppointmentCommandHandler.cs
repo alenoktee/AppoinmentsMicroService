@@ -20,9 +20,9 @@ public class ApproveAppointmentCommandHandler : IRequestHandler<ApproveAppointme
 
     public async Task Handle(ApproveAppointmentCommand request, CancellationToken cancellationToken)
     {
-        var affectedRows = await _appointmentsRepository.ApproveAsync(request.Id);
+        var appointment = await _appointmentsRepository.ApproveAsync(request.Id);
 
-        if (affectedRows == 0)
+        if (appointment == 0)
         {
             throw new Exception($"Appointment with Id {request.Id} not found.");
         }

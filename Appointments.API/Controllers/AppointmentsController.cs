@@ -12,6 +12,8 @@ using Appointments.Application.Appointments.Queries.GetFreeSlots;
 using Appointments.Application.Dtos;
 using Appointments.Domain.Dtos;
 
+using AutoMapper;
+
 using MediatR;
 
 using Microsoft.AspNetCore.Mvc;
@@ -25,10 +27,12 @@ namespace Appointments.API.Controllers;
 public class AppointmentsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IMapper _mapper;
 
-    public AppointmentsController(IMediator mediator)
+    public AppointmentsController(IMediator mediator, IMapper mapper)
     {
         _mediator = mediator;
+        _mapper = mapper;
     }
 
     [HttpPost]
@@ -36,21 +40,7 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto dto)
     {
-        var command = new CreateAppointmentCommand(
-            dto.PatientId,
-            dto.DoctorId,
-            dto.ServiceId,
-            dto.OfficeId,
-            dto.Date,
-            dto.Time,
-            dto.ServiceName,
-            dto.DoctorFirstName,
-            dto.DoctorLastName,
-            dto.DoctorMiddleName,
-            dto.PatientFirstName,
-            dto.PatientLastName,
-            dto.PatientMiddleName
-        );
+        var command = _mapper.Map<CreateAppointmentCommand>(dto);
 
         var appointmentId = await _mediator.Send(command);
 
@@ -78,9 +68,9 @@ public class AppointmentsController : ControllerBase
     public async Task<IActionResult> GetAppointmentForDoctor(Guid id)
     {
         var query = new GetAppointmentAsDoctorQuery(id);
-        var result = await _mediator.Send(query);
+        var appointment = await _mediator.Send(query);
 
-        return result is null ? NotFound() : Ok(result);
+        return appointment is null ? NotFound() : Ok(appointment);
     }
 
     [HttpGet("patient/{id:guid}")]
@@ -89,9 +79,9 @@ public class AppointmentsController : ControllerBase
     public async Task<IActionResult> GetAppointmentForPatient(Guid id)
     {
         var query = new GetAppointmentAsPatientQuery(id);
-        var result = await _mediator.Send(query);
+        var appointment = await _mediator.Send(query);
 
-        return result is null ? NotFound() : Ok(result);
+        return appointment is null ? NotFound() : Ok(appointment);
     }
 
     [HttpGet("receptionist/{id:guid}")]
@@ -100,9 +90,9 @@ public class AppointmentsController : ControllerBase
     public async Task<IActionResult> GetAppointmentForReceptionist(Guid id)
     {
         var query = new GetAppointmentAsReceptionistQuery(id);
-        var result = await _mediator.Send(query);
+        var appointment = await _mediator.Send(query);
 
-        return result is null ? NotFound() : Ok(result);
+        return appointment is null ? NotFound() : Ok(appointment);
     }
 
     [HttpGet("doctor")]
@@ -114,8 +104,8 @@ public class AppointmentsController : ControllerBase
         [FromQuery] int pageNumber = 1)
     {
         var query = new GetAppointmentsForDoctorQuery(doctorId, pageSize, pageNumber, date);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        var appointments = await _mediator.Send(query);
+        return Ok(appointments);
     }
 
     [HttpGet("patient")]
@@ -123,8 +113,8 @@ public class AppointmentsController : ControllerBase
     public async Task<IActionResult> GetAppointmentsForPatient([FromQuery] Guid patientId, [FromQuery] int pageSize = 20, [FromQuery] int pageNumber = 1)
     {
         var query = new GetAppointmentsForPatientQuery(patientId, pageSize, pageNumber);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        var appointments = await _mediator.Send(query);
+        return Ok(appointments);
     }
 
     [HttpPatch("{id}/approve")]
@@ -151,8 +141,8 @@ public class AppointmentsController : ControllerBase
     {
         var query = new GetAppointmentsForReceptionistQuery(
             pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        var appointments = await _mediator.Send(query);
+        return Ok(appointments);
     }
 
     [HttpPatch("{id:guid}/reschedule")]
@@ -186,7 +176,7 @@ public class AppointmentsController : ControllerBase
     public async Task<IActionResult> GetFreeSlots(Guid doctorId, [FromQuery] DateTime date)
     {
         var query = new GetFreeSlotsQuery(doctorId, date);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        var slots = await _mediator.Send(query);
+        return Ok(slots);
     }
 }

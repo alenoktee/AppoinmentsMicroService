@@ -13,7 +13,7 @@ public partial class Appointment
     public Guid ServiceId { get; set; }
     public DateTime Date { get; set; }
     public TimeSpan Time { get; set; }
-    public AppointmentStatus Status { get; set; }
+    public AppointmentStatus Status { get; set; } // TODO: aaaa
     public Guid OfficeId { get; set; }
     public string ServiceName { get; set; } = string.Empty;
     public string DoctorFirstName { get; set; } = string.Empty;

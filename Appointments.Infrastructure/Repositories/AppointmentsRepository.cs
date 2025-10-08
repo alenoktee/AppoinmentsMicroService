@@ -33,7 +33,7 @@ public class AppointmentsRepository : IAppointmentsRepository
         using var connection = _context.CreateConnection();
 
         const string sql = "SELECT create_appointment(" +
-                           "@Id, @PatientId, @DoctorId, @ServiceId, @OfficeId, @Date, @Time, " +
+                           "@Id, @PatientId, @DoctorId, @ServiceId, @OfficeId, @Date, @Time, @Status, " +
                            "@ServiceName, @DoctorFirstName, @DoctorLastName, @DoctorMiddleName, " +
                            "@PatientFirstName, @PatientLastName, @PatientMiddleName)";
 
@@ -45,6 +45,7 @@ public class AppointmentsRepository : IAppointmentsRepository
         parameters.Add("@OfficeId", appointment.OfficeId);
         parameters.Add("@Date", appointment.Date, DbType.Date);
         parameters.Add("@Time", appointment.Time, DbType.Time);
+        parameters.Add("@Status", (short)appointment.Status); // TODO: aaa
         parameters.Add("@ServiceName", appointment.ServiceName);
         parameters.Add("@DoctorFirstName", appointment.DoctorFirstName);
         parameters.Add("@DoctorLastName", appointment.DoctorLastName);
@@ -55,6 +56,7 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         return await connection.ExecuteScalarAsync<Guid>(sql, parameters);
     }
+
     public async Task<int> ChangeStatusAsync(Guid id, short status)
     {
         using var connection = _context.CreateConnection();
@@ -194,11 +196,11 @@ public class AppointmentsRepository : IAppointmentsRepository
     public async Task<IEnumerable<OccupiedTimeSlotDto>> GetOccupiedTimeSlotsAsync(Guid doctorId, DateTime date)
     {
         using var connection = _context.CreateConnection();
-        const string sql = "SELECT * FROM get_occupied_time_slots(@doctor_id, @date)";
+        const string sql = "SELECT * FROM get_occupied_time_slots(@doctor_id, @filter_date)";
 
         var parameters = new DynamicParameters();
         parameters.Add("doctor_id", doctorId);
-        parameters.Add("date", date, DbType.Date);
+        parameters.Add("filter_date", date, DbType.Date);
 
         return await connection.QueryAsync<OccupiedTimeSlotDto>(sql, parameters);
     }
