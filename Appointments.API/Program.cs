@@ -1,8 +1,11 @@
+using Appointments.API.Consumers;
 using Appointments.API.Infrastructure.Data;
 using Appointments.Application.Appointments.Commands.CreateAppointment;
 using Appointments.Application.Mappings;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
+
+using MassTransit;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -37,6 +40,24 @@ public class Program
 
         builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
         builder.Services.AddScoped<IResultsRepository, ResultsRepository>();
+
+        builder.Services.AddMassTransit(x =>
+        {
+            x.AddConsumer<ServiceUpdatedConsumer>();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("localhost", "/", h => {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
+
+                cfg.ReceiveEndpoint("appointments-service-updated", e =>
+                {
+                    e.ConfigureConsumer<ServiceUpdatedConsumer>(context);
+                });
+            });
+        });
 
         var app = builder.Build();
 

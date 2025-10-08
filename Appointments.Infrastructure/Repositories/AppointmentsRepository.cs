@@ -202,4 +202,12 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         return await connection.QueryAsync<OccupiedTimeSlotDto>(sql, parameters);
     }
+
+    public async Task UpdateServiceNameInAppointments(Guid serviceId, string newName)
+    {
+        using (var connection = _context.CreateConnection())
+        {
+            await connection.ExecuteAsync("SELECT update_service_name_in_appointments(@ServiceId, @NewName)", new { ServiceId = serviceId, NewName = newName });
+        }
+    }
 }
