@@ -8,6 +8,7 @@ using Appointments.Application.Appointments.Queries.GetAppointments.GetAppointme
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsDoctor;
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsPatient;
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsReceptionist;
+using Appointments.Application.Appointments.Queries.GetFreeSlots;
 using Appointments.Application.Dtos;
 using Appointments.Domain.Dtos;
 
@@ -178,5 +179,14 @@ public class AppointmentsController : ControllerBase
         {
             return StatusCode(500, $"An unexpected error occurred: {ex}");
         }
+    }
+
+    [HttpGet("doctors/{doctorId:guid}/free-slots")]
+    [ProducesResponseType(typeof(IEnumerable<TimeSpan>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFreeSlots(Guid doctorId, [FromQuery] DateTime date)
+    {
+        var query = new GetFreeSlotsQuery(doctorId, date);
+        var result = await _mediator.Send(query);
+        return Ok(result);
     }
 }

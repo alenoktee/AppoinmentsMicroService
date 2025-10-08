@@ -1,5 +1,6 @@
-using Appointments.Domain.Entities;
 using Appointments.Application.Dtos;
+using Appointments.Domain.Dtos;
+using Appointments.Domain.Entities;
 
 namespace Appointments.Domain.Interfaces;
 
@@ -18,4 +19,5 @@ public interface IAppointmentsRepository
     Task<AppointmentForPatientDto?> GetForPatientByIdAsync(Guid id);
     Task<AppointmentForReceptionistDto?> GetForReceptionistByIdAsync(Guid id);
     Task<Appointment?> GetByIdAsync(Guid id);
+    Task<IEnumerable<OccupiedTimeSlotDto>> GetOccupiedTimeSlotsAsync(Guid doctorId, DateTime date);
 }

@@ -1,5 +1,6 @@
 using Appointments.API.Infrastructure.Data;
 using Appointments.Application.Dtos;
+using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
@@ -188,5 +189,17 @@ public class AppointmentsRepository : IAppointmentsRepository
             opts.Items["ResultsLoader"] = resultsLoader);
 
         return proxy;
+    }
+
+    public async Task<IEnumerable<OccupiedTimeSlotDto>> GetOccupiedTimeSlotsAsync(Guid doctorId, DateTime date)
+    {
+        using var connection = _context.CreateConnection();
+        const string sql = "SELECT * FROM get_occupied_time_slots(@doctor_id, @date)";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("doctor_id", doctorId);
+        parameters.Add("date", date, DbType.Date);
+
+        return await connection.QueryAsync<OccupiedTimeSlotDto>(sql, parameters);
     }
 }
