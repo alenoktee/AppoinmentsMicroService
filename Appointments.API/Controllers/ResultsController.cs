@@ -1,12 +1,17 @@
+using Appointments.Application.Exceptions;
 using Appointments.Application.Results.Commands.CreateResultCommand;
 using Appointments.Application.Results.Commands.UpdateResultCommand;
 using Appointments.Application.Results.Queries.GetResultByIdQuery;
+using Appointments.Application.Results.Queries.GetResultXml;
 using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
 
 using MediatR;
 
 using Microsoft.AspNetCore.Mvc;
+
+using System.Text;
+using System.Xml.Serialization;
 
 namespace Appointments.API.Controllers;
 
@@ -26,16 +31,27 @@ public class ResultsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateResultForAppointment(Guid appointmentId, [FromBody] CreateResultDto dto)
     {
-        var command = new CreateResultCommand(
+        try
+        {
+            var command = new CreateResultCommand(
             appointmentId,
             dto.Complaints,
             dto.Conclusion,
             dto.Recommendations
         );
 
-        var resultId = await _mediator.Send(command);
+            var resultId = await _mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetResultById), new { id = resultId }, resultId);
+            return CreatedAtAction(nameof(GetResultById), new { id = resultId }, resultId);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex}");
+        }
     }
 
     [HttpGet("results/{id:guid}", Name = "GetResultById")]
@@ -65,9 +81,33 @@ public class ResultsController : ControllerBase
             await _mediator.Send(command);
             return NoContent();
         }
-        catch (Exception ex)
+        catch (NotFoundException ex)
         {
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex}");
+        }
+    }
+
+    [HttpGet("results/{id:guid}/xml-result")]
+    public async Task<IActionResult> GetXml(Guid id)
+    {
+        try
+        {
+            var query = new GetResultXmlQuery(id);
+            var fileBytes = await _mediator.Send(query);
+            string fileName = $"result_{id}.xml";
+            return File(fileBytes, "application/xml", fileName);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex}");
         }
     }
 }

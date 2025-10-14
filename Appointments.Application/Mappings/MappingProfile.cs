@@ -1,6 +1,7 @@
 using Appointments.Application.Appointments.Commands.CreateAppointment;
 using Appointments.Application.Dtos;
 using Appointments.Application.Results.Commands.CreateResultCommand;
+using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
 
 using AutoMapper;
@@ -18,6 +19,7 @@ public class MappingProfile : Profile
         CreateMap<Appointment, AppointmentForDoctorDto>();
         CreateMap<Appointment, AppointmentForPatientDto>();
         CreateMap<Appointment, AppointmentForReceptionistDto>();
+        CreateMap<Result, ResultXmlDto>();
 
         CreateMap<CreateResultCommand, Result>();
 

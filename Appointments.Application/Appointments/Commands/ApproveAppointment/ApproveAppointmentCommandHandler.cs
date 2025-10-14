@@ -1,3 +1,5 @@
+using Appointments.Application.Exceptions;
+using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
 
@@ -24,7 +26,7 @@ public class ApproveAppointmentCommandHandler : IRequestHandler<ApproveAppointme
 
         if (appointment == 0)
         {
-            throw new Exception($"Appointment with Id {request.Id} not found.");
+            throw new NotFoundException(nameof(Appointment), request.Id);
         }
     }
 }

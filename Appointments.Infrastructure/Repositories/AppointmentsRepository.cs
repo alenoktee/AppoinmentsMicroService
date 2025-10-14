@@ -212,4 +212,18 @@ public class AppointmentsRepository : IAppointmentsRepository
             await connection.ExecuteAsync("SELECT update_service_name_in_appointments(@ServiceId, @NewName)", new { ServiceId = serviceId, NewName = newName });
         }
     }
+
+    public async Task<IEnumerable<Appointment>> GetAppointmentsForDateAsync(DateTime date)
+    {
+        const string sql = "SELECT * FROM get_appointments_for_date(@Date)";
+
+        using (var connection = _context.CreateConnection())
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@Date", date, DbType.Date);
+
+            var appointments = await connection.QueryAsync<Appointment>(sql, parameters);
+            return appointments;
+        }
+    }
 }

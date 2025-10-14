@@ -10,6 +10,7 @@ using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsPati
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsReceptionist;
 using Appointments.Application.Appointments.Queries.GetFreeSlots;
 using Appointments.Application.Dtos;
+using Appointments.Application.Exceptions;
 using Appointments.Domain.Dtos;
 
 using AutoMapper;
@@ -48,6 +49,8 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpPatch("{id}/cancel")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelAppointment(Guid id)
     {
         try
@@ -55,6 +58,10 @@ public class AppointmentsController : ControllerBase
             var command = new CancelAppointmentCommand(id);
             await _mediator.Send(command);
             return Ok();
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
         catch (Exception ex)
         {
@@ -97,6 +104,7 @@ public class AppointmentsController : ControllerBase
 
     [HttpGet("doctor")]
     [ProducesResponseType(typeof(IEnumerable<AppointmentForDoctorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAppointmentsForDoctor(
         [FromQuery] Guid doctorId,
         [FromQuery] DateTime date,
@@ -105,15 +113,24 @@ public class AppointmentsController : ControllerBase
     {
         var query = new GetAppointmentsForDoctorQuery(doctorId, pageSize, pageNumber, date);
         var appointments = await _mediator.Send(query);
+        if (appointments is null || !appointments.Any())
+        {
+            return NotFound();
+        }
         return Ok(appointments);
     }
 
     [HttpGet("patient")]
     [ProducesResponseType(typeof(IEnumerable<AppointmentForPatientDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAppointmentsForPatient([FromQuery] Guid patientId, [FromQuery] int pageSize = 20, [FromQuery] int pageNumber = 1)
     {
         var query = new GetAppointmentsForPatientQuery(patientId, pageSize, pageNumber);
         var appointments = await _mediator.Send(query);
+        if (appointments is null || !appointments.Any())
+        {
+            return NotFound();
+        }
         return Ok(appointments);
     }
 
@@ -128,20 +145,27 @@ public class AppointmentsController : ControllerBase
             await _mediator.Send(command);
             return Ok();
         }
-        catch (Exception ex)
+        catch (NotFoundException ex)
         {
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
         }
     }
 
     [HttpGet("receptionist")]
-    public async Task<IActionResult> GetAppointmentsForReceptionist(
-    int pageSize, int pageNumber, DateTime? date,
-    string? doctorFullName, string? serviceName, short? status, Guid? officeId)
+    [ProducesResponseType(typeof(IEnumerable<AppointmentForReceptionistDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAppointmentsForReceptionist(int pageSize, int pageNumber, DateTime? date, string? doctorFullName, string? serviceName, short? status, Guid? officeId)
     {
-        var query = new GetAppointmentsForReceptionistQuery(
-            pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId);
+        var query = new GetAppointmentsForReceptionistQuery(pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId);
         var appointments = await _mediator.Send(query);
+        if (appointments is null || !appointments.Any())
+        {
+            return NotFound();
+        }
         return Ok(appointments);
     }
 
@@ -157,17 +181,17 @@ public class AppointmentsController : ControllerBase
             await _mediator.Send(command);
             return NoContent();
         }
-        catch (PostgresException ex) when (ex.SqlState == "P0001")
+        catch (BadRequestException ex)
         {
             return BadRequest(ex.Message);
         }
-        catch (PostgresException ex) when (ex.SqlState == "P0002")
+        catch (NotFoundException ex)
         {
             return NotFound(ex.Message);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"An unexpected error occurred: {ex}");
+            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
         }
     }
 
@@ -175,8 +199,19 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TimeSpan>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFreeSlots(Guid doctorId, [FromQuery] DateTime date)
     {
-        var query = new GetFreeSlotsQuery(doctorId, date);
-        var slots = await _mediator.Send(query);
-        return Ok(slots);
+        try
+        {
+            var query = new GetFreeSlotsQuery(doctorId, date);
+            var slots = await _mediator.Send(query);
+            return Ok(slots);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex}");
+        }
     }
 }

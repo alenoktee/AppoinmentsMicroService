@@ -21,4 +21,5 @@ public interface IAppointmentsRepository
     Task<Appointment?> GetByIdAsync(Guid id);
     Task<IEnumerable<OccupiedTimeSlotDto>> GetOccupiedTimeSlotsAsync(Guid doctorId, DateTime date);
     Task UpdateServiceNameInAppointments(Guid serviceId, string newName);
+    Task<IEnumerable<Appointment>> GetAppointmentsForDateAsync(DateTime date);
 }

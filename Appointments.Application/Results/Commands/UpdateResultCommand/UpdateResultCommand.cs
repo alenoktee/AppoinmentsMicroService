@@ -7,4 +7,4 @@ public record UpdateResultCommand(
     string Complaints,
     string Conclusion,
     string Recommendations
-) : IRequest;
+) : IRequest<Unit>, IResultCommand;

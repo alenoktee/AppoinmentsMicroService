@@ -7,4 +7,4 @@ public record CreateResultCommand(
     string Complaints,
     string Conclusion,
     string Recommendations
-) : IRequest<Guid>;
+) : IRequest<Guid>, IResultCommand;
