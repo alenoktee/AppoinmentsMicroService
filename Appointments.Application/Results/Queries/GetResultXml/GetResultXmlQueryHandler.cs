@@ -2,11 +2,8 @@ using Appointments.Application.Exceptions;
 using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Interfaces;
-
 using AutoMapper;
-
 using MediatR;
-
 using System.Text;
 using System.Xml.Serialization;
 

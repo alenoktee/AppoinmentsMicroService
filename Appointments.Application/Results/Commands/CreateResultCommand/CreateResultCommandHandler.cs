@@ -1,3 +1,4 @@
+using Appointments.Application.Exceptions;
 using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
@@ -26,16 +27,19 @@ public class CreateResultCommandHandler : IRequestHandler<CreateResultCommand, G
 
     public async Task<Guid> Handle(CreateResultCommand request, CancellationToken cancellationToken)
     {
-        var result = _mapper.Map<Result>(request);
-        var resultId = await _resultsRepository.CreateAsync(result);
-        await _appointmentsRepository.ChangeStatusAsync(request.AppointmentId, (short)AppointmentStatus.Completed);
-
-        var createdResult = await _resultsRepository.GetByIdAsync(resultId);
-        if (createdResult != null)
+        var appointment = await _appointmentsRepository.GetByIdAsync(request.AppointmentId);
+        if (appointment is null)
         {
-            await _notificationService.SendResultUpdateNotificationAsync(createdResult, cancellationToken);
+            throw new NotFoundException($"Appointment with ID {request.AppointmentId} not found.");
         }
 
-        return resultId;
+        var resultToCreate = _mapper.Map<Result>(request);
+        var createdResult = await _resultsRepository.CreateAsync(resultToCreate);
+
+        await _appointmentsRepository.ChangeStatusAsync(request.AppointmentId, (short)AppointmentStatus.Completed);
+
+        await _notificationService.SendResultUpdateNotificationAsync(createdResult, appointment, cancellationToken);
+
+        return createdResult.Id;
     }
 }

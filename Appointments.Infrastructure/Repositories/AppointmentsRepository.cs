@@ -4,13 +4,8 @@ using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
-
 using AutoMapper;
-
 using Dapper;
-
-using Npgsql;
-
 using System.Data;
 
 namespace Appointments.Infrastructure.Repositories;

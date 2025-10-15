@@ -1,6 +1,5 @@
 using Appointments.Application.Configuration;
 using Appointments.Domain.Interfaces;
-
 using MediatR;
 
 namespace Appointments.Application.Appointments.Queries.GetFreeSlots;
@@ -20,25 +19,13 @@ public class GetFreeSlotsQueryHandler : IRequestHandler<GetFreeSlotsQuery, IEnum
     {
         var occupiedSlots = await _appointmentsRepository.GetOccupiedTimeSlotsAsync(request.DoctorId, request.Date);
 
-        var workDayStart = _workScheduleSettings.WorkDayStart;
-        var workDayEnd = _workScheduleSettings.WorkDayEnd;
-        var slotDuration = TimeSpan.FromMinutes(_workScheduleSettings.SlotDurationInMinutes);
+        var allPossibleSlots = _workScheduleSettings.GenerateAllPossibleSlots();
 
-        var allPossibleSlots = new List<TimeSpan>();
-        var currentTime = workDayStart;
-        while (currentTime < workDayEnd)
-        {
-            allPossibleSlots.Add(currentTime);
-            currentTime = currentTime.Add(slotDuration);
-        }
-
-        var freeSlots = new List<TimeSpan>(allPossibleSlots);
-
-        foreach (var occupied in occupiedSlots)
-        {
-            freeSlots.RemoveAll(slot =>
-                slot >= occupied.StartTime && slot < occupied.EndTime);
-        }
+        var freeSlots = allPossibleSlots
+            .Where(slot =>
+                !occupiedSlots.Any(occupied =>
+                    slot >= occupied.StartTime && slot < occupied.EndTime))
+            .ToList();
 
         return freeSlots;
     }

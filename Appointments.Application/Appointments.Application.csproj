@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SharedContracts\Shared.Contracts\Shared.Messages.Contracts.csproj" />
     <ProjectReference Include="..\Appointments.Domain\Appointments.Domain.csproj" />
   </ItemGroup>
 

@@ -23,9 +23,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SharedContracts\Shared.Contracts\Shared.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\..\SharedContracts\Shared.Contracts\Shared.Messages.Contracts.csproj" />
     <ProjectReference Include="..\Appointments.Application\Appointments.Application.csproj" />
     <ProjectReference Include="..\Appointments.Infrastructure\Appointments.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

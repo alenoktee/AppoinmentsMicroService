@@ -1,9 +1,6 @@
 using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Interfaces;
-
 using MediatR;
-
-using Microsoft.AspNetCore.Authentication;
 
 namespace Appointments.Application.Results.Commands.UpdateResultCommand;
 

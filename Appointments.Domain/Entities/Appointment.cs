@@ -1,8 +1,5 @@
 using Appointments.Domain.Enums;
 
-using System;
-using System.Collections.Generic;
-
 namespace Appointments.Domain.Entities;
 
 public partial class Appointment

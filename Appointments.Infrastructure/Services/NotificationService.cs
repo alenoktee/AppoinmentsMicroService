@@ -1,9 +1,8 @@
 using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Interfaces;
-using Shared.Messaging.Contracts;
-
 using MassTransit;
+using Shared.Messages.Contracts;
 
 namespace Appointments.Infrastructure.Services;
 
@@ -37,11 +36,8 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task SendResultUpdateNotificationAsync(Result result, CancellationToken cancellationToken = default)
+    public async Task SendResultUpdateNotificationAsync(Result result, Appointment appointment, CancellationToken cancellationToken = default)
     {
-        var appointment = await _appointmentsRepository.GetByIdAsync(result.AppointmentId);
-        if (appointment == null) return;
-
         var accountId = await GetAccountIdSafeAsync(appointment.PatientId, cancellationToken);
         if (!accountId.HasValue) return;
 

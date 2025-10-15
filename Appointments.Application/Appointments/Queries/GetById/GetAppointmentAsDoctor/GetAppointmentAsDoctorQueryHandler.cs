@@ -2,8 +2,6 @@ using AutoMapper;
 using MediatR;
 using Appointments.Domain.Interfaces;
 using Appointments.Application.Dtos;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsDoctor;
 

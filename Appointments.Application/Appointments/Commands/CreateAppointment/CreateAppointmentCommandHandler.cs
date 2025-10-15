@@ -1,9 +1,7 @@
 using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
-
 using AutoMapper;
-
 using MediatR;
 
 namespace Appointments.Application.Appointments.Commands.CreateAppointment;
@@ -22,11 +20,8 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
     public async Task<Guid> Handle(CreateAppointmentCommand command, CancellationToken cancellationToken)
     {
         var appointment = _mapper.Map<Appointment>(command);
-
         appointment.Status = AppointmentStatus.Scheduled;
-
         await _appointmentsRepository.CreateAsync(appointment);
-
         return appointment.Id;
     }
 }

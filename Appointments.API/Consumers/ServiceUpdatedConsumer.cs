@@ -1,6 +1,6 @@
 using MassTransit;
 using Appointments.Domain.Interfaces;
-using Shared.Messaging.Contracts;
+using Shared.Messages.Contracts;
 
 namespace Appointments.API.Consumers;
 

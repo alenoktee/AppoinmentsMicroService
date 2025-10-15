@@ -19,8 +19,6 @@ using MediatR;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Npgsql;
-
 namespace Appointments.API.Controllers;
 
 [ApiController]
@@ -39,18 +37,29 @@ public class AppointmentsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto dto)
     {
-        var command = _mapper.Map<CreateAppointmentCommand>(dto);
-
-        var appointmentId = await _mediator.Send(command);
-
-        return CreatedAtAction(nameof(GetAppointmentForReceptionist), new { id = appointmentId }, appointmentId);
+        try
+        {
+            var command = _mapper.Map<CreateAppointmentCommand>(dto);
+            var appointmentId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetAppointmentForReceptionist), new { id = appointmentId }, appointmentId);
+        }
+        catch (BadRequestException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
+        }
     }
 
     [HttpPatch("{id}/cancel")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CancelAppointment(Guid id)
     {
         try
@@ -65,7 +74,7 @@ public class AppointmentsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return NotFound(ex.Message);
+            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
         }
     }
 
@@ -76,7 +85,6 @@ public class AppointmentsController : ControllerBase
     {
         var query = new GetAppointmentAsDoctorQuery(id);
         var appointment = await _mediator.Send(query);
-
         return appointment is null ? NotFound() : Ok(appointment);
     }
 
@@ -87,7 +95,6 @@ public class AppointmentsController : ControllerBase
     {
         var query = new GetAppointmentAsPatientQuery(id);
         var appointment = await _mediator.Send(query);
-
         return appointment is null ? NotFound() : Ok(appointment);
     }
 
@@ -113,11 +120,7 @@ public class AppointmentsController : ControllerBase
     {
         var query = new GetAppointmentsForDoctorQuery(doctorId, pageSize, pageNumber, date);
         var appointments = await _mediator.Send(query);
-        if (appointments is null || !appointments.Any())
-        {
-            return NotFound();
-        }
-        return Ok(appointments);
+        return Ok(appointments ?? Enumerable.Empty<AppointmentForDoctorDto>());
     }
 
     [HttpGet("patient")]
@@ -127,16 +130,24 @@ public class AppointmentsController : ControllerBase
     {
         var query = new GetAppointmentsForPatientQuery(patientId, pageSize, pageNumber);
         var appointments = await _mediator.Send(query);
-        if (appointments is null || !appointments.Any())
-        {
-            return NotFound();
-        }
-        return Ok(appointments);
+        return Ok(appointments ?? Enumerable.Empty<AppointmentForPatientDto>());
+    }
+
+    [HttpGet("receptionist")]
+    [ProducesResponseType(typeof(IEnumerable<AppointmentForReceptionistDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAppointmentsForReceptionist(int pageSize, int pageNumber, DateTime? date, string? doctorFullName, string? serviceName, short? status, Guid? officeId)
+    {
+        var query = new GetAppointmentsForReceptionistQuery(pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId);
+        var appointments = await _mediator.Send(query);
+        return Ok(appointments ?? Enumerable.Empty<AppointmentForReceptionistDto>());
     }
 
     [HttpPatch("{id}/approve")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ApproveAppointment(Guid id)
     {
         try
@@ -149,30 +160,21 @@ public class AppointmentsController : ControllerBase
         {
             return NotFound(ex.Message);
         }
+        catch (BadRequestException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
         }
     }
 
-    [HttpGet("receptionist")]
-    [ProducesResponseType(typeof(IEnumerable<AppointmentForReceptionistDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAppointmentsForReceptionist(int pageSize, int pageNumber, DateTime? date, string? doctorFullName, string? serviceName, short? status, Guid? officeId)
-    {
-        var query = new GetAppointmentsForReceptionistQuery(pageSize, pageNumber, date, doctorFullName, serviceName, status, officeId);
-        var appointments = await _mediator.Send(query);
-        if (appointments is null || !appointments.Any())
-        {
-            return NotFound();
-        }
-        return Ok(appointments);
-    }
-
     [HttpPatch("{id:guid}/reschedule")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleAppointmentDto dto)
     {
         try
@@ -180,10 +182,6 @@ public class AppointmentsController : ControllerBase
             var command = new RescheduleAppointmentCommand(id, dto.NewDate, dto.NewTime);
             await _mediator.Send(command);
             return NoContent();
-        }
-        catch (BadRequestException ex)
-        {
-            return BadRequest(ex.Message);
         }
         catch (NotFoundException ex)
         {
@@ -197,6 +195,8 @@ public class AppointmentsController : ControllerBase
 
     [HttpGet("doctors/{doctorId:guid}/free-slots")]
     [ProducesResponseType(typeof(IEnumerable<TimeSpan>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetFreeSlots(Guid doctorId, [FromQuery] DateTime date)
     {
         try

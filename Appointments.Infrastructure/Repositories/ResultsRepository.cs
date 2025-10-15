@@ -1,7 +1,6 @@
 using Appointments.API.Infrastructure.Data;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Interfaces;
-
 using Dapper;
 
 namespace Appointments.Infrastructure.Repositories;
@@ -15,12 +14,12 @@ public class ResultsRepository : IResultsRepository
         _context = context;
     }
 
-    public async Task<Guid> CreateAsync(Result result)
+    public async Task<Result> CreateAsync(Result result)
     {
         using var connection = _context.CreateConnection();
-        const string sql = "SELECT create_result(@Id, @AppointmentId, @Complaints, @Conclusion, @Recommendations)";
+        const string sql = "SELECT * FROM create_result(@Id, @AppointmentId, @Complaints, @Conclusion, @Recommendations)";
 
-        return await connection.ExecuteScalarAsync<Guid>(sql, result);
+        return await connection.QuerySingleAsync<Result>(sql, result);
     }
 
 

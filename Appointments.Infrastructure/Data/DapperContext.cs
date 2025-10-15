@@ -1,7 +1,4 @@
 using System.Data;
-
-using Microsoft.Extensions.Configuration;
-
 using Npgsql;
 
 namespace Appointments.API.Infrastructure.Data;

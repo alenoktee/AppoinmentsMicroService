@@ -1,8 +1,6 @@
 -- DROP SCHEMA public;
 
 CREATE SCHEMA public AUTHORIZATION pg_database_owner;
-
-COMMENT ON SCHEMA public IS 'standard public schema';
 -- public."Appointments" определение
 
 -- Drop table
@@ -77,15 +75,16 @@ $function$
 
 -- DROP FUNCTION public.create_result(uuid, uuid, text, text, text);
 
-CREATE OR REPLACE FUNCTION public.create_result(id uuid, appointment_id uuid, complaints text, conclusion text, recommendations text)
- RETURNS uuid
+CREATE OR REPLACE FUNCTION public.create_result(p_id uuid, p_appointment_id uuid, p_complaints text, p_conclusion text, p_recommendations text)
+ RETURNS SETOF "Results"
  LANGUAGE plpgsql
-AS $function$
+AS $function$ -- 1. Изменили возвращаемый тип
 BEGIN
+    -- 2. Используем RETURN QUERY с INSERT ... RETURNING *
+    RETURN QUERY
     INSERT INTO "Results" ("Id", "AppointmentId", "Complaints", "Conclusion", "Recommendations")
-    VALUES (id, appointment_id, complaints, conclusion, recommendations);
-
-    RETURN id; -- <-- ИЗМЕНЕНИЕ №2
+    VALUES (p_id, p_appointment_id, p_complaints, p_conclusion, p_recommendations)
+    RETURNING *;
 END;
 $function$
 ;

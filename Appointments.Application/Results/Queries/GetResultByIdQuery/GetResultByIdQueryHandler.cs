@@ -1,8 +1,5 @@
-using Appointments.Application.Appointments.Queries.GetAppointments.GetAppointmentsForDoctor;
-using Appointments.Application.Dtos;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Interfaces;
-
 using MediatR;
 
 namespace Appointments.Application.Results.Queries.GetResultByIdQuery;

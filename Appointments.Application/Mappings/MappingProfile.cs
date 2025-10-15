@@ -3,7 +3,6 @@ using Appointments.Application.Dtos;
 using Appointments.Application.Results.Commands.CreateResultCommand;
 using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
-
 using AutoMapper;
 
 namespace Appointments.Application.Mappings;

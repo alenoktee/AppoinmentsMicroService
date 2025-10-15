@@ -4,7 +4,7 @@ namespace Appointments.Application.Services.Interfaces;
 
 public interface INotificationService
 {
-    Task SendResultUpdateNotificationAsync(Result result, CancellationToken cancellationToken = default);
+    Task SendResultUpdateNotificationAsync(Result result, Appointment appointment, CancellationToken cancellationToken = default);
     Task SendAppointmentReminderNotificationAsync(Appointment appointment, CancellationToken cancellationToken = default);
-    Task<Guid?> GetAccountIdSafeAsync(Guid patientId, CancellationToken cancellationToken); 
+    Task<Guid?> GetAccountIdSafeAsync(Guid patientId, CancellationToken cancellationToken = default); 
 }

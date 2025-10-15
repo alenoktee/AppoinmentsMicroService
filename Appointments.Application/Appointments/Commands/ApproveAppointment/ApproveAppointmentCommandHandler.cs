@@ -1,13 +1,7 @@
 using Appointments.Application.Exceptions;
 using Appointments.Domain.Entities;
-using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
-
 using MediatR;
-
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Appointments.Application.Appointments.Commands.ApproveAppointment;
 

@@ -1,6 +1,5 @@
 using Appointments.Application.Dtos;
 using Appointments.Domain.Interfaces;
-
 using MediatR;
 
 namespace Appointments.Application.Appointments.Queries.GetAppointments.GetAppointmentsForDoctor;

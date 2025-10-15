@@ -1,25 +1,25 @@
-
+using Appointments.Application.Configuration;
 using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Interfaces;
-using Appointments.Infrastructure.Repositories;
 
-namespace Appointments.API.Services;
+using Microsoft.Extensions.Options;
 
-public class AppointmentReminderService : BackgroundService
+namespace Appointments.API.HostedServices;
+
+public class AppointmentReminderHostedService : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<AppointmentReminderService> _logger;
-    private static readonly TimeSpan Period = TimeSpan.FromSeconds(30);
+    private readonly ILogger<AppointmentReminderHostedService> _logger;
+    private readonly TimeSpan _period;
 
-    public AppointmentReminderService(IServiceProvider serviceProvider, ILogger<AppointmentReminderService> logger)
+    public AppointmentReminderHostedService(IOptions<ReminderSettings> reminderSettings, ILogger<AppointmentReminderHostedService> logger)
     {
-        _serviceProvider = serviceProvider;
         _logger = logger;
+        _period = reminderSettings.Value.CheckInterval;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(Period);
+        using var timer = new PeriodicTimer(_period);
 
         while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
         {
@@ -29,17 +29,15 @@ public class AppointmentReminderService : BackgroundService
 
     private async Task ProcessRemindersAsync(CancellationToken cancellationToken)
     {
-        await using var scope = _serviceProvider.CreateAsyncScope();
-
         var appointmentsRepository = scope.ServiceProvider.GetRequiredService<IAppointmentsRepository>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
         try
         {
-            var tomorrow = DateTime.UtcNow.AddDays(1);
-            _logger.LogInformation("Processing appointment reminders for {Date}", tomorrow);
-            var appointments = await appointmentsRepository.GetAppointmentsForDateAsync(tomorrow);
-            _logger.LogInformation("Found {Count} appointments for tomorrow", appointments.Count());
+            var nextDay = DateTime.UtcNow.AddDays(1);
+            _logger.LogDebug("Processing appointment reminders for {Date}", nextDay);
+            var appointments = await appointmentsRepository.GetAppointmentsForDateAsync(nextDay);
+            _logger.LogDebug("Found {Count} appointments for tomorrow", appointments.Count());
 
             foreach (var appointment in appointments)
             {

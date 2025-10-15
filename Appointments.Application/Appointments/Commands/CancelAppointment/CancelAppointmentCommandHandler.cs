@@ -2,7 +2,6 @@ using Appointments.Application.Exceptions;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
-
 using MediatR;
 
 namespace Appointments.Application.Appointments.Commands.CancelAppointment;
