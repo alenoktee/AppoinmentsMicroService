@@ -33,13 +33,12 @@ public class CreateResultCommandHandler : IRequestHandler<CreateResultCommand, G
             throw new NotFoundException($"Appointment with ID {request.AppointmentId} not found.");
         }
 
-        var resultToCreate = _mapper.Map<Result>(request);
-        var createdResult = await _resultsRepository.CreateAsync(resultToCreate);
+        var result = await _resultsRepository.CreateAsync(_mapper.Map<Result>(request));
 
         await _appointmentsRepository.ChangeStatusAsync(request.AppointmentId, (short)AppointmentStatus.Completed);
 
-        await _notificationService.SendResultUpdateNotificationAsync(createdResult, appointment, cancellationToken);
+        await _notificationService.SendResultUpdateNotificationAsync(result, appointment, cancellationToken);
 
-        return createdResult.Id;
+        return result.Id;
     }
 }

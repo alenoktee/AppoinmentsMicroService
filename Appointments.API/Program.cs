@@ -1,17 +1,23 @@
 using Appointments.API.Consumers;
+using Appointments.API.HostedServices;
 using Appointments.API.Infrastructure.Data;
 using Appointments.Application.Appointments.Commands.CreateAppointment;
 using Appointments.Application.Behaviors;
+using Appointments.Application.Configuration;
 using Appointments.Application.Mappings;
 using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.Infrastructure.Services;
-using Appointments.Application.Configuration;
+
 using FluentValidation;
+
 using MassTransit;
+
 using MediatR;
-using Appointments.API.HostedServices;
+
+using Polly;
+using Polly.Extensions.Http;
 
 namespace Appointments.API;
 
@@ -41,7 +47,8 @@ public class Program
         builder.Services.AddScoped<INotificationService, NotificationService>();
         builder.Services.AddHostedService<AppointmentReminderHostedService>();
 
-        builder.Services.AddMediatR(cfg => {
+        builder.Services.AddMediatR(cfg =>
+        {
             cfg.RegisterServicesFromAssembly(typeof(CreateAppointmentCommandHandler).Assembly);
 
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -58,7 +65,8 @@ public class Program
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h => {
+                cfg.Host("localhost", "/", h =>
+                {
                     h.Username("guest");
                     h.Password("guest");
                 });
@@ -73,7 +81,15 @@ public class Program
         builder.Services.AddHttpClient<IProfileServiceClient, ProfileServiceClient>(client =>
         {
             client.BaseAddress = new Uri(builder.Configuration["Services:Profiles"]);
-        });
+        })
+        .AddPolicyHandler(
+            HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .RetryAsync(3, (exception, retryCount) =>
+            {
+                Console.WriteLine($"Retry {retryCount} due to {exception.Exception.Message}");
+            })
+        );
 
         var app = builder.Build();
 

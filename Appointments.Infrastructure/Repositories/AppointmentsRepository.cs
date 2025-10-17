@@ -40,7 +40,7 @@ public class AppointmentsRepository : IAppointmentsRepository
         parameters.Add("@OfficeId", appointment.OfficeId);
         parameters.Add("@Date", appointment.Date, DbType.Date);
         parameters.Add("@Time", appointment.Time, DbType.Time);
-        parameters.Add("@Status", (short)appointment.Status); // TODO: aaa
+        parameters.Add("@Status", (short)appointment.Status);
         parameters.Add("@ServiceName", appointment.ServiceName);
         parameters.Add("@DoctorFirstName", appointment.DoctorFirstName);
         parameters.Add("@DoctorLastName", appointment.DoctorLastName);
