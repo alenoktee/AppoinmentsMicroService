@@ -17,7 +17,7 @@ public class AppointmentReminderHostedService : BackgroundService
         _period = reminderSettings.Value.CheckInterval;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         using var timer = new PeriodicTimer(_period);
 
