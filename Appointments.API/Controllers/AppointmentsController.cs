@@ -12,11 +12,8 @@ using Appointments.Application.Appointments.Queries.GetFreeSlots;
 using Appointments.Application.Dtos;
 using Appointments.Application.Exceptions;
 using Appointments.Domain.Dtos;
-
 using AutoMapper;
-
 using MediatR;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Appointments.API.Controllers;

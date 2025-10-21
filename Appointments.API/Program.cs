@@ -9,13 +9,9 @@ using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.Infrastructure.Services;
-
 using FluentValidation;
-
 using MassTransit;
-
 using MediatR;
-
 using Polly;
 using Polly.Extensions.Http;
 
@@ -40,7 +36,6 @@ public class Program
 
         builder.Services.Configure<WorkScheduleSettings>(builder.Configuration.GetSection("WorkSchedule"));
         builder.Services.Configure<ReminderSettings>(builder.Configuration.GetSection("ReminderSettings"));
-
 
         builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
         builder.Services.AddScoped<IResultsRepository, ResultsRepository>();

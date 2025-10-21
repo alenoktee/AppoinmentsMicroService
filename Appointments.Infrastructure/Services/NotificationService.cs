@@ -1,8 +1,11 @@
 using Appointments.Application.Services.Interfaces;
+using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
-using Appointments.Domain.Interfaces;
 using MassTransit;
 using Shared.Messages.Contracts;
+using System.Text;
+using System.Xml.Serialization;
+using static MassTransit.ValidationResultExtensions;
 
 namespace Appointments.Infrastructure.Services;
 
@@ -10,14 +13,13 @@ public class NotificationService : INotificationService
 {
     private readonly IProfileServiceClient _profileClient;
     private readonly IPublishEndpoint _publishEndpoint;
-    private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly ILogger<NotificationService> _logger;
+    private const string XmlContentType = "application/xml";
 
-    public NotificationService(IProfileServiceClient profileClient, IPublishEndpoint publishEndpoint, IAppointmentsRepository appointmentsRepository, ILogger<NotificationService> logger)
+    public NotificationService(IProfileServiceClient profileClient, IPublishEndpoint publishEndpoint, ILogger<NotificationService> logger)
     {
         _profileClient = profileClient;
         _publishEndpoint = publishEndpoint;
-        _appointmentsRepository = appointmentsRepository;
         _logger = logger;
     }
 
@@ -40,10 +42,28 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task SendResultUpdateNotificationAsync(Result result, Appointment appointment, CancellationToken cancellationToken = default)
+    public async Task SendResultUpdateNotificationAsync(Domain.Entities.Result result, Appointment appointment, CancellationToken cancellationToken = default)
     {
         var accountId = await GetAccountIdSafeAsync(appointment.PatientId, cancellationToken);
         if (!accountId.HasValue) return;
+
+        var xmlDto = new ResultXmlDto
+        {
+            Complaints = result.Complaints,
+            Conclusion = result.Conclusion,
+            Recommendations = result.Recommendations
+        };
+
+        byte[] xmlData;
+        var serializer = new XmlSerializer(typeof(ResultXmlDto));
+        using (var memoryStream = new MemoryStream())
+        {
+            using (var writer = new StreamWriter(memoryStream, new UTF8Encoding(false)))
+            {
+                serializer.Serialize(writer, xmlDto);
+            }
+            xmlData = memoryStream.ToArray();
+        }
 
         var message = new AppointmentResultUpdatedEvent
         {
@@ -53,13 +73,14 @@ public class NotificationService : INotificationService
             DoctorFirstName = appointment.DoctorFirstName,
             DoctorLastName = appointment.DoctorLastName,
             ServiceName = appointment.ServiceName,
-            AppointmentDate = appointment.Date
+            AppointmentDate = appointment.Date,
+            ResultFile = xmlData,
+            ContentType = XmlContentType
         };
 
         try
         {
             await _publishEndpoint.Publish(message, cancellationToken);
-
             _logger.LogInformation("Successfully published {EventName} for Patient Account ID {PatientAccountId}", nameof(AppointmentResultUpdatedEvent), accountId.Value);
         }
         catch (Exception ex)
@@ -83,10 +104,10 @@ public class NotificationService : INotificationService
             DoctorLastName = appointment.DoctorLastName,
             ServiceName = appointment.ServiceName
         };
+
         try
         {
             await _publishEndpoint.Publish(message, cancellationToken);
-
             _logger.LogInformation("Successfully published {EventName} for Patient Account ID {PatientAccountId}", nameof(AppointmentReminderEvent), accountId.Value);
         }
         catch (Exception ex)

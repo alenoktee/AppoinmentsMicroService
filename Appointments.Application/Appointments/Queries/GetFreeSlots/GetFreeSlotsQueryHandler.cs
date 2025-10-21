@@ -1,6 +1,7 @@
 using Appointments.Application.Configuration;
 using Appointments.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Appointments.Application.Appointments.Queries.GetFreeSlots;
 
@@ -9,10 +10,10 @@ public class GetFreeSlotsQueryHandler : IRequestHandler<GetFreeSlotsQuery, IEnum
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly WorkScheduleSettings _workScheduleSettings;
 
-    public GetFreeSlotsQueryHandler(IAppointmentsRepository appointmentsRepository, WorkScheduleSettings workScheduleSettings)
+    public GetFreeSlotsQueryHandler(IAppointmentsRepository appointmentsRepository, IOptions<WorkScheduleSettings> workScheduleSettings)
     {
         _appointmentsRepository = appointmentsRepository;
-        _workScheduleSettings = workScheduleSettings;
+        _workScheduleSettings = workScheduleSettings.Value;
     }
 
     public async Task<IEnumerable<TimeSpan>> Handle(GetFreeSlotsQuery request, CancellationToken cancellationToken)

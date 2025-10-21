@@ -3,9 +3,7 @@ using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Entities;
 using Appointments.Domain.Enums;
 using Appointments.Domain.Interfaces;
-
 using AutoMapper;
-
 using MediatR;
 
 namespace Appointments.Application.Results.Commands.CreateResultCommand;

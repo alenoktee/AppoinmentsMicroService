@@ -8,11 +8,13 @@ public class UpdateResultCommandHandler : IRequestHandler<UpdateResultCommand, U
 {
     private readonly IResultsRepository _resultsRepository;
     private readonly INotificationService _notificationService;
+    private readonly IAppointmentsRepository _appointmentsRepository;
 
-    public UpdateResultCommandHandler(IResultsRepository resultsRepository, INotificationService notificationService)
+    public UpdateResultCommandHandler(IResultsRepository resultsRepository,  INotificationService notificationService, IAppointmentsRepository appointmentsRepository)
     {
         _resultsRepository = resultsRepository;
         _notificationService = notificationService;
+        _appointmentsRepository = appointmentsRepository;
     }
 
     public async Task<Unit> Handle(UpdateResultCommand request, CancellationToken cancellationToken)
@@ -26,7 +28,11 @@ public class UpdateResultCommandHandler : IRequestHandler<UpdateResultCommand, U
         var result = await _resultsRepository.GetByIdAsync(request.Id);
         if (result != null)
         {
-            await _notificationService.SendResultUpdateNotificationAsync(result, cancellationToken);
+            var appointment = await _appointmentsRepository.GetByIdAsync(result.AppointmentId);
+            if (appointment != null)
+            {
+                await _notificationService.SendResultUpdateNotificationAsync(result, appointment, cancellationToken);
+            }
         }
 
         return Unit.Value;
