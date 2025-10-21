@@ -37,20 +37,10 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto dto)
     {
-        try
-        {
-            var command = _mapper.Map<CreateAppointmentCommand>(dto);
-            var appointmentId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetAppointmentForReceptionist), new { id = appointmentId }, appointmentId);
-        }
-        catch (BadRequestException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
-        }
+        var command = _mapper.Map<CreateAppointmentCommand>(dto);
+        var appointmentId = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetAppointmentForReceptionist), new { id = appointmentId }, appointmentId);
+
     }
 
     [HttpPatch("{id}/cancel")]
@@ -59,20 +49,10 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CancelAppointment(Guid id)
     {
-        try
-        {
-            var command = new CancelAppointmentCommand(id);
-            await _mediator.Send(command);
-            return Ok();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
-        }
+        var command = new CancelAppointmentCommand(id);
+        await _mediator.Send(command);
+        return Ok();
+
     }
 
     [HttpGet("doctor/{id:guid}")]
@@ -147,24 +127,10 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ApproveAppointment(Guid id)
     {
-        try
-        {
-            var command = new ApproveAppointmentCommand(id);
-            await _mediator.Send(command);
-            return Ok();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (BadRequestException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
-        }
+        var command = new ApproveAppointmentCommand(id);
+        await _mediator.Send(command);
+        return Ok();
+
     }
 
     [HttpPatch("{id:guid}/reschedule")]
@@ -174,20 +140,10 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RescheduleAppointment(Guid id, [FromBody] RescheduleAppointmentDto dto)
     {
-        try
-        {
-            var command = new RescheduleAppointmentCommand(id, dto.NewDate, dto.NewTime);
-            await _mediator.Send(command);
-            return NoContent();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
-        }
+        var command = new RescheduleAppointmentCommand(id, dto.NewDate, dto.NewTime);
+        await _mediator.Send(command);
+        return NoContent();
+
     }
 
     [HttpGet("doctors/{doctorId:guid}/free-slots")]
@@ -196,19 +152,8 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetFreeSlots(Guid doctorId, [FromQuery] DateTime date)
     {
-        try
-        {
-            var query = new GetFreeSlotsQuery(doctorId, date);
-            var slots = await _mediator.Send(query);
-            return Ok(slots);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex}");
-        }
+        var query = new GetFreeSlotsQuery(doctorId, date);
+        var slots = await _mediator.Send(query);
+        return Ok(slots);
     }
 }

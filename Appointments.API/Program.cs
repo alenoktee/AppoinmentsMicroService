@@ -1,6 +1,7 @@
 using Appointments.API.Consumers;
 using Appointments.API.HostedServices;
 using Appointments.API.Infrastructure.Data;
+using Appointments.API.Middleware;
 using Appointments.Application.Appointments.Commands.CreateAppointment;
 using Appointments.Application.Behaviors;
 using Appointments.Application.Configuration;
@@ -41,6 +42,8 @@ public class Program
         builder.Services.AddScoped<IResultsRepository, ResultsRepository>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
         builder.Services.AddHostedService<AppointmentReminderHostedService>();
+
+        builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
         builder.Services.AddMediatR(cfg =>
         {
@@ -95,6 +98,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.MapControllers();
 

@@ -28,27 +28,17 @@ public class ResultsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateResultForAppointment(Guid appointmentId, [FromBody] CreateResultDto dto)
     {
-        try
-        {
-            var command = new CreateResultCommand(
-            appointmentId,
-            dto.Complaints,
-            dto.Conclusion,
-            dto.Recommendations
-        );
+        var command = new CreateResultCommand(
+        appointmentId,
+        dto.Complaints,
+        dto.Conclusion,
+        dto.Recommendations
+    );
 
-            var resultId = await _mediator.Send(command);
+        var resultId = await _mediator.Send(command);
 
-            return CreatedAtAction(nameof(GetResultById), new { id = resultId }, resultId);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex}");
-        }
+        return CreatedAtAction(nameof(GetResultById), new { id = resultId }, resultId);
+
     }
 
     [HttpGet("{id:guid}", Name = "GetResultById")]
@@ -69,25 +59,14 @@ public class ResultsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateResult(Guid id, [FromBody] UpdateResultDto dto)
     {
-        try
-        {
-            var command = new UpdateResultCommand(
-                id,
-                dto.Complaints,
-                dto.Conclusion,
-                dto.Recommendations
-            );
-            await _mediator.Send(command);
-            return NoContent();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex}");
-        }
+        var command = new UpdateResultCommand(
+            id,
+            dto.Complaints,
+            dto.Conclusion,
+            dto.Recommendations
+        );
+        await _mediator.Send(command);
+        return NoContent();
     }
 
     [HttpGet("{id:guid}/xml-result")]
@@ -96,20 +75,9 @@ public class ResultsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetXml(Guid id)
     {
-        try
-        {
-            var query = new GetResultXmlQuery(id);
-            var fileBytes = await _mediator.Send(query);
-            string fileName = $"result_{id}.xml";
-            return File(fileBytes, "application/xml", fileName);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An unexpected error occurred: {ex}");
-        }
+        var query = new GetResultXmlQuery(id);
+        var fileBytes = await _mediator.Send(query);
+        string fileName = $"result_{id}.xml";
+        return File(fileBytes, "application/xml", fileName);
     }
 }
