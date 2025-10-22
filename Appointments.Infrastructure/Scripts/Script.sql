@@ -1,9 +1,6 @@
 -- DROP SCHEMA public;
 
 CREATE SCHEMA public AUTHORIZATION pg_database_owner;
--- public."Appointments" определение
-
--- Drop table
 
 -- DROP TABLE public."Appointments";
 
@@ -27,9 +24,6 @@ CREATE TABLE public."Appointments" (
 );
 
 
--- public."Results" определение
-
--- Drop table
 
 -- DROP TABLE public."Results";
 
@@ -78,9 +72,8 @@ $function$
 CREATE OR REPLACE FUNCTION public.create_result(p_id uuid, p_appointment_id uuid, p_complaints text, p_conclusion text, p_recommendations text)
  RETURNS SETOF "Results"
  LANGUAGE plpgsql
-AS $function$ -- 1. Изменили возвращаемый тип
+AS $function$
 BEGIN
-    -- 2. Используем RETURN QUERY с INSERT ... RETURNING *
     RETURN QUERY
     INSERT INTO "Results" ("Id", "AppointmentId", "Complaints", "Conclusion", "Recommendations")
     VALUES (p_id, p_appointment_id, p_complaints, p_conclusion, p_recommendations)
@@ -146,7 +139,7 @@ AS $function$
 BEGIN
     RETURN QUERY
     SELECT * FROM public."Appointments"
-    WHERE "Date" = filter_date AND "Status" != 3; -- Статус 3 = Cancelled (отменено)
+    WHERE "Date" = filter_date AND "Status" != 3;
 END;
 $function$
 ;
@@ -198,14 +191,14 @@ AS $function$
 BEGIN
     RETURN QUERY
     SELECT
-        a."Time" AS "StartTime", -- <-- Алиас теперь "StartTime"
+        a."Time" AS "StartTime",
         (a."Time" +
             CASE
                 WHEN a."ServiceName" ILIKE '%диагностика%' THEN interval '30 minutes'
                 WHEN a."ServiceName" ILIKE '%консультация%' THEN interval '20 minutes'
                 ELSE interval '10 minutes'
             END
-        )::time AS "EndTime" -- <-- Алиас теперь "EndTime"
+        )::time AS "EndTime"
     FROM
         "Appointments" a
     WHERE
@@ -249,21 +242,16 @@ AS $function$
 DECLARE
     current_status smallint;
 BEGIN
-    -- 1. Получаем текущий статус записи в переменную
     SELECT "Status" INTO current_status FROM "Appointments" WHERE "Id" = appointment_id;
 
-    -- 2. Проверяем статус. Статус 0 - 'Scheduled'.
     IF NOT FOUND THEN
-        -- Если запись вообще не найдена, генерируем ошибку
         RAISE EXCEPTION 'Appointment with ID % not found', appointment_id USING ERRCODE = 'P0002';
     END IF;
     
     IF current_status != 0 THEN
-        -- Если статус не 'Scheduled', генерируем другую ошибку
         RAISE EXCEPTION 'Cannot reschedule an appointment that is not in a scheduled state.' USING ERRCODE = 'P0001';
     END IF;
 
-    -- 3. Если все проверки пройдены, обновляем запись
     UPDATE "Appointments"
     SET
         "Date" = new_date,

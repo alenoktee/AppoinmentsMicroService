@@ -4,6 +4,7 @@ using Appointments.Application.Results.Commands.CreateResultCommand;
 using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
 using AutoMapper;
+using Shared.Messages.Contracts;
 
 namespace Appointments.Application.Mappings;
 
@@ -19,6 +20,13 @@ public class MappingProfile : Profile
         CreateMap<Appointment, AppointmentForPatientDto>();
         CreateMap<Appointment, AppointmentForReceptionistDto>();
         CreateMap<Result, ResultXmlDto>();
+
+        CreateMap<Appointment, AppointmentResultUpdatedEvent>()
+            .ForMember(dest => dest.AppointmentDate, opt => opt.MapFrom(src => src.Date))
+            .ForMember(dest => dest.ResultId, opt => opt.Ignore())
+            .ForMember(dest => dest.PatientAccountId, opt => opt.Ignore())
+            .ForMember(dest => dest.ResultFile, opt => opt.Ignore())
+            .ForMember(dest => dest.ContentType, opt => opt.Ignore());
 
         CreateMap<CreateResultCommand, Result>();
 

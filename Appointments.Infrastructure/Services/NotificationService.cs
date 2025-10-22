@@ -1,6 +1,7 @@
 using Appointments.Application.Services.Interfaces;
 using Appointments.Domain.Dtos;
 using Appointments.Domain.Entities;
+using AutoMapper;
 using MassTransit;
 using Shared.Messages.Contracts;
 using System.Text;
@@ -15,12 +16,14 @@ public class NotificationService : INotificationService
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<NotificationService> _logger;
     private const string XmlContentType = "application/xml";
+    private readonly IMapper _mapper;
 
-    public NotificationService(IProfileServiceClient profileClient, IPublishEndpoint publishEndpoint, ILogger<NotificationService> logger)
+    public NotificationService(IProfileServiceClient profileClient, IPublishEndpoint publishEndpoint, ILogger<NotificationService> logger, IMapper mapper)
     {
         _profileClient = profileClient;
         _publishEndpoint = publishEndpoint;
         _logger = logger;
+        _mapper = mapper;
     }
 
     public async Task<Guid?> GetAccountIdSafeAsync(Guid patientId, CancellationToken cancellationToken)
@@ -47,12 +50,7 @@ public class NotificationService : INotificationService
         var accountId = await GetAccountIdSafeAsync(appointment.PatientId, cancellationToken);
         if (!accountId.HasValue) return;
 
-        var xmlDto = new ResultXmlDto
-        {
-            Complaints = result.Complaints,
-            Conclusion = result.Conclusion,
-            Recommendations = result.Recommendations
-        };
+        var xmlDto = _mapper.Map<ResultXmlDto>(result);
 
         byte[] xmlData;
         var serializer = new XmlSerializer(typeof(ResultXmlDto));
@@ -69,14 +67,11 @@ public class NotificationService : INotificationService
         {
             ResultId = result.Id,
             PatientAccountId = accountId.Value,
-            PatientFirstName = appointment.PatientFirstName,
-            DoctorFirstName = appointment.DoctorFirstName,
-            DoctorLastName = appointment.DoctorLastName,
-            ServiceName = appointment.ServiceName,
-            AppointmentDate = appointment.Date,
             ResultFile = xmlData,
             ContentType = XmlContentType
         };
+
+        _mapper.Map(appointment, message);
 
         try
         {

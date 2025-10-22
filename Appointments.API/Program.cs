@@ -13,6 +13,7 @@ using Appointments.Infrastructure.Services;
 using FluentValidation;
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -37,13 +38,14 @@ public class Program
 
         builder.Services.Configure<WorkScheduleSettings>(builder.Configuration.GetSection("WorkSchedule"));
         builder.Services.Configure<ReminderSettings>(builder.Configuration.GetSection("ReminderSettings"));
+        builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection(RabbitMqSettings.SectionName));
+
+        builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
         builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
         builder.Services.AddScoped<IResultsRepository, ResultsRepository>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
         builder.Services.AddHostedService<AppointmentReminderHostedService>();
-
-        builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
         builder.Services.AddMediatR(cfg =>
         {
@@ -63,10 +65,12 @@ public class Program
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h =>
+                var rabbitMqSettings = context.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
+
+                cfg.Host(rabbitMqSettings.Host, rabbitMqSettings.VirtualHost, h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitMqSettings.Username);
+                    h.Password(rabbitMqSettings.Password);
                 });
 
                 cfg.ReceiveEndpoint("appointments-service-updated", e =>

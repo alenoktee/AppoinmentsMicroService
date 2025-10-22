@@ -21,26 +21,6 @@ public class ResultsController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpPost("{appointmentId:guid}/results")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateResultForAppointment(Guid appointmentId, [FromBody] CreateResultDto dto)
-    {
-        var command = new CreateResultCommand(
-        appointmentId,
-        dto.Complaints,
-        dto.Conclusion,
-        dto.Recommendations
-    );
-
-        var resultId = await _mediator.Send(command);
-
-        return CreatedAtAction(nameof(GetResultById), new { id = resultId }, resultId);
-
-    }
-
     [HttpGet("{id:guid}", Name = "GetResultById")]
     [ProducesResponseType(typeof(Result), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

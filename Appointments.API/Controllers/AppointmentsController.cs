@@ -10,7 +10,7 @@ using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsPati
 using Appointments.Application.Appointments.Queries.GetById.GetAppointmentAsReceptionist;
 using Appointments.Application.Appointments.Queries.GetFreeSlots;
 using Appointments.Application.Dtos;
-using Appointments.Application.Exceptions;
+using Appointments.Application.Results.Commands.CreateResultCommand;
 using Appointments.Domain.Dtos;
 using AutoMapper;
 using MediatR;
@@ -155,5 +155,24 @@ public class AppointmentsController : ControllerBase
         var query = new GetFreeSlotsQuery(doctorId, date);
         var slots = await _mediator.Send(query);
         return Ok(slots);
+    }
+
+    [HttpPost("{appointmentId:guid}/create-result")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateResultForAppointment(Guid appointmentId, [FromBody] CreateResultDto dto)
+    {
+        var command = new CreateResultCommand(
+            appointmentId,
+            dto.Complaints,
+            dto.Conclusion,
+            dto.Recommendations
+        );
+
+        var resultId = await _mediator.Send(command);
+
+        return CreatedAtAction("GetResultById", "Results", new { id = resultId }, resultId);
     }
 }
