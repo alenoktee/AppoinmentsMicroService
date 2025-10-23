@@ -14,6 +14,10 @@ indent_size = 4
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+end_of_line = crlf
+dotnet_style_coalesce_expression = true:suggestion
 
 # ====================================================================================
 # Настройки для C# файлов (*.cs)
@@ -23,8 +27,8 @@ insert_final_newline = true
 # --- Базовые правила из прошлого запроса ---
 
 # Автоматическая сортировка и группировка using'ов
-csharp_sort_usings = true
-dotnet_separate_import_directive_groups = true
+csharp_sort_usings = false
+dotnet_separate_import_directive_groups = false
 
 # Использовать пространства имен на уровне файла (File-Scoped Namespaces)
 csharp_style_namespace_declarations = file_scoped:suggestion
@@ -108,3 +112,18 @@ dotnet_naming_style.pascal_case_with_i_prefix.required_prefix = I
 dotnet_naming_style.camel_case.capitalization = camel_case
 dotnet_naming_style.camel_case_with_underscore.capitalization = camel_case
 dotnet_naming_style.camel_case_with_underscore.required_prefix = _
+csharp_indent_labels = one_less_than_current
+csharp_using_directive_placement = outside_namespace:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_system_threading_lock = true:suggestion
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_operators = false:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+csharp_style_expression_bodied_lambdas = true:silent
+csharp_style_expression_bodied_local_functions = false:silent
